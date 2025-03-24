@@ -47,7 +47,7 @@ app.post('/create-order', async (req, res) => {
         
         // }"
 
-          .amount(amount)
+          .amount(amount*100)
           .redirectUrl(redirectUrl)
           .build();
 
@@ -67,37 +67,7 @@ app.post('/create-order', async (req, res) => {
 });
 
 
-// app.post('/create-order', async (req, res) => {
-//     try {
 
-//         const {amount} = req.body
-
-//         if(!amount){
-//             return res.status(400).send("Amount is required")
-//         }
-
-//         const merchantOrderId = randomUUID()
-//         console.log(merchantOrderId);
-
-//         const redirectUrl = `http://localhost:5000/check-status?merchantOrderId=${merchantOrderId}`
-
-//         const request = StandardCheckoutPayRequest.builder()
-//         .merchantOrderId(merchantOrderId)
-//         .amount(amount)
-//         .redirectUrl(redirectUrl)
-//         .build()
-
-//         const response = await client.pay(request)
-
-//         return res.json({
-//             checkoutPageUrl:response.redirectUrl
-//         })
-        
-//     } catch (error) {
-//         console.error("error creating order" + error)
-//         res.status(500).send("Error creating order")
-//     }
-// })
 
 app.get('/check-status', async (req, res) => {
     try {
