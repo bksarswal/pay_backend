@@ -24,7 +24,7 @@ const client = StandardCheckoutClient.getInstance(clientId, clientSecret,clientV
 
 app.post('/create-order', async (req, res) => {
   try {
-      // 🔹 Frontend se name, mobile, amount lenge
+      //  Frontend se name, mobile, amount lenge
       const { name, mobile, amount } = req.body;
 
       if (!name || !mobile || !amount) {
@@ -55,6 +55,20 @@ app.post('/create-order', async (req, res) => {
 
       const response = await client.pay(request);
       console.log("Payment Response:", response);
+      // I folllow this process and solve our problem   
+     // First in backed create order id and save your name mobile email of customer in db using order id
+      //After payment status api get the order id then find in db and just update status
+      const newPayment_create = new Payment({
+        merchantOrderId,
+        name,
+        mobile,
+        amount,
+        status: "pending",
+      });
+
+      await newPayment_create.save();
+      console.log(" Payment saved to MongoDB");
+
 
       return res.json({
           checkoutPageUrl: response.redirectUrl
@@ -74,10 +88,10 @@ app.get('/check-status', async (req, res) => {
 
         const {merchantOrderId,name,mobile ,amount} = req.query
 
-        console.log(merchantOrderId);
-        console.log(name);
-        console.log(amount);
-        console.log(mobile);
+        // console.log(merchantOrderId);
+        // console.log(name);
+        // console.log(amount);
+        // console.log(mobile);
       
 
         if(!merchantOrderId){
@@ -88,20 +102,35 @@ app.get('/check-status', async (req, res) => {
         console.log(" Payment Status Response:", response);
 
         const status = response.state
-        console.log(status);
+        // console.log(status);
+
+
+        const payment = await Payment.findOne({ merchantOrderId });
+        if (payment) {
+          payment.status = status;
+          await payment.save();
+          console.log(' Payment status updated in MongoDB');
+        } else {
+          console.warn(' Payment record not found in MongoDB');
+        }
+    
 
         if (status === "COMPLETED") {
           // **Save Payment to MongoDB**
-          const newPayment = new Payment({
-            merchantOrderId,
-            name,
-            mobile,
-            amount,
-            status: "COMPLETED",
-          });
+          // const newPayment = new Payment({
+          //   merchantOrderId,
+          //   name,
+          //   mobile,
+          //   amount,
+          //   status: "COMPLETED",
+          // });
     
-          await newPayment.save();
-          console.log("✅ Payment saved to MongoDB");
+          // await newPayment.save();
+          // console.log(" Payment saved to MongoDB");
+
+         
+          
+
     
           return res.redirect(`http://localhost:5173/success`);
         } else {
